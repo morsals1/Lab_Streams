@@ -1,0 +1,5 @@
+﻿  Rab01_02.cpp
+C:\Users\mensh\Desktop\Lab_Streams-main\Rab01_02\Rab01_02.cpp(12,14): warning C4311: приведение типов: усечение указателя из "LPVOID" в "int"
+C:\Users\mensh\Desktop\Lab_Streams-main\Rab01_02\Rab01_02.cpp(12,14): warning C4302: приведение типов: усечение из "LPVOID" к "int"
+C:\Users\mensh\Desktop\Lab_Streams-main\Rab01_02\Rab01_02.cpp(71,58): warning C4312: приведение типов: преобразование из "int" в "LPVOID" большего размера
+  Rab01_02.vcxproj -> C:\Users\mensh\Desktop\Lab_Streams-main\Rab01_02\x64\Debug\Rab01_02.exe

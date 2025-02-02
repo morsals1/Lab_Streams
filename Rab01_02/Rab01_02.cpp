@@ -1,86 +1,94 @@
-﻿// Rab01_02.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
-#include <iostream>
+﻿#include <iostream>
 #include <Windows.h>
+#include <cstdio>
 
-int pole[50];
-int position = 0;
+int positions[10] = { 0 };
 bool check_winner = false;
+int winner_id = -1;
+FILE* logFile;
 
 DWORD WINAPI Turtle_races(LPVOID iNum)
 {
     int id = (int)iNum;
-    int step = 0;
+    int current_position = 0;
+    int step_count = 0;
 
+    srand(GetTickCount() + id * 100);
 
-    for (int i = 0; i < id; i++) {
-        step = rand() % (2 - 0 + 1) + 0;
-    }
-
-    while (position < 50) 
+    while (current_position < 50)
     {
-        std::cout << " Это поток " << id << " шаг " << step << " позиция " << position << "\n";
-        position += step;
+        int step = rand() % 3;
+        current_position += step;
+        step_count++;
+
+        if (current_position >= 50) {
+            break;
+        }
+
+        std::cout << "Поток " << id << " шаг " << step << " позиция " << current_position << "\n";
+
+        fprintf(logFile, "Поток %d, шаг %d, позиция %d\n", id, step, current_position);
+        fflush(logFile);
 
         Sleep(1000);
+        positions[id - 1] = current_position;
+
+        if (current_position == 49 && !check_winner) {
+            check_winner = true;
+            winner_id = id;
+            break;
+        }
     }
 
     return 0;
-
 }
 
 int main()
 {
     setlocale(LC_ALL, "Russian");
-
     int turtle_sum;
 
-    HANDLE theard[10];
-    DWORD idTheard[10];
+    if (fopen_s(&logFile, "race_log.txt", "w") != 0) {
+        std::cerr << "Ошибка открытия файла!" << std::endl;
+        return 1;
+    }
+
+    HANDLE threads[10];
+    DWORD threadID[10];
 
     std::cout << "Введите кол-во черепах от 5 до 10\n";
     std::cin >> turtle_sum;
 
-    for (int i = 0; i < turtle_sum; i++) {
-        theard[i] = CreateThread(NULL, 0, Turtle_races, (LPVOID)(i+1), 0, &idTheard[i]);
+    if (turtle_sum < 5 || turtle_sum > 10) {
+        std::cout << "Неверное число черепах! Введите число от 5 до 10.\n";
+        fclose(logFile);
+        return 1;
+    }
 
-        if (theard[i] == NULL) {
+    for (int i = 0; i < turtle_sum; i++) {
+        threads[i] = CreateThread(NULL, 0, Turtle_races, (LPVOID)(i + 1), 0, &threadID[i]);
+
+        if (threads[i] == NULL) {
+            fclose(logFile);
             return GetLastError();
         }
-        Sleep(1000);
     }
 
-    int id_win = 0;
+    WaitForMultipleObjects(turtle_sum, threads, TRUE, INFINITE);
 
     for (int i = 0; i < turtle_sum; i++) {
-        WaitForSingleObject(theard[i], INFINITE);
-        CloseHandle(theard[i]);
-
-        if (check_winner != true) {
-            id_win = (int)theard[i];
-        }
+        CloseHandle(threads[i]);
     }
 
-
-
-    if (check_winner != true) {
-        std::cout << " Это поток " << id_win << " позиция " << position << "ПОБЕДИТЕЛЬ!!!!" << "\n";
-        check_winner == true;
+    if (check_winner) {
+        std::cout << "Победитель: Поток с номером " << winner_id << "\n";
+        fprintf(logFile, "Победитель: Поток с номером %d\n", winner_id);
+    }
+    else {
+        std::cout << "Нет победителя.\n";
+        fprintf(logFile, "Нет победителя.\n");
     }
 
-
-
+    fclose(logFile);
+    return 0;
 }
-
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
